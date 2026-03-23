@@ -1,0 +1,24 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx expo *)", "Bash(npx jest *)", "Bash(npx prettier *)",
+      "Bash(npx eslint *)", "Bash(npm install *)", "Bash(npm run *)",
+      "Bash(npx maestro *)", "Bash(adb *)", "Bash(git *)",
+      "Bash(cat *)", "Bash(ls *)", "Bash(find *)", "Bash(grep *)"
+    ],
+    "deny": [
+      "Bash(rm -rf /)", "Bash(rm -rf .)", "Bash(*--force*)",
+      "Bash(*sudo*)", "Read(.env)", "Read(.env.*)"
+    ]
+  },
+  "hooks": {
+    "PostToolUse": [{
+      "matcher": "Write|Edit|MultiEdit",
+      "hooks": [{"type": "command", "command": "filepath=$(cat | jq -r '.tool_input.file_path // .tool_input.path // empty'); if [ -n \"$filepath\" ] && echo \"$filepath\" | grep -qE '\\.(ts|tsx|js|jsx|json)$'; then npx prettier --write \"$filepath\" 2>/dev/null; fi; exit 0"}]
+    }],
+    "PreToolUse": [{
+      "matcher": "Bash",
+      "hooks": [{"type": "command", "command": "bash .claude/hooks/pre-bash-firewall.sh"}]
+    }]
+  }
+}

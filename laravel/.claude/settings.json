@@ -1,0 +1,30 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(php artisan *)", "Bash(./vendor/bin/pint *)", "Bash(./vendor/bin/pest *)",
+      "Bash(composer *)", "Bash(npm *)", "Bash(npx *)",
+      "Bash(git *)", "Bash(cat *)", "Bash(ls *)", "Bash(find *)",
+      "Bash(grep *)", "Bash(mkdir *)"
+    ],
+    "deny": [
+      "Bash(rm -rf /)", "Bash(rm -rf .)", "Bash(*--force*)",
+      "Bash(*sudo*)", "Bash(php artisan migrate:fresh --force*)",
+      "Bash(php artisan db:wipe*)",
+      "Read(.env)", "Read(.env.*)", "Edit(.env)", "Edit(.env.*)"
+    ]
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit|MultiEdit",
+        "hooks": [{"type": "command", "command": "filepath=$(cat | jq -r '.tool_input.file_path // .tool_input.path // empty'); if [ -n \"$filepath\" ] && echo \"$filepath\" | grep -qE '\\.php$'; then php -l \"$filepath\" 2>/dev/null && ./vendor/bin/pint \"$filepath\" 2>/dev/null; fi; exit 0"}]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [{"type": "command", "command": "bash .claude/hooks/pre-bash-firewall.sh"}]
+      }
+    ]
+  }
+}
